@@ -185,7 +185,7 @@ public class IsoSurface {
             return;
         }
         
-        int edge = edgeTable[squareIndex];
+        int edge = msEdges[squareIndex];
         
         Vector3f[] intersectionPoints = new Vector3f[8];
         Vector3f[] intersectionNormals = new Vector3f[8];
@@ -594,6 +594,26 @@ public class IsoSurface {
         {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
     
+    
+    private static final int msEdges[] =
+    {
+        0x0, // 0000 Nothing intersects
+        0x9, // 0001 0
+        0x3, // 0010 1
+        0xA, // 0011 0 1
+        0x6, // 0100 2
+        0xF, // 0101 0 2
+        0x5, // 0110 1 2
+        0xC, // 0111 0 1 2
+        0xC, // 1000 3
+        0x5, // 1001 0 3
+        0xF, // 1010 1 3
+        0x6, // 1011 0 1 3
+        0xA, // 1100 2 3
+        0x3, // 1101 0 2 3
+        0x9, // 1110 1 2 3
+        0x0  // 1111 0 1 2 3
+    };
     
     private static final int msTriangles[][] =
     {
