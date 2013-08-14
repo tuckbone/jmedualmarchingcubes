@@ -7,6 +7,7 @@ package mygame;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,6 +32,8 @@ public class Chunk extends Geometry {
     private ChunkTreeSharedData shared;
     private static ThreadPoolExecutor executor = new ThreadPoolExecutor(8, 10000, 100, TimeUnit.SECONDS, new ArrayBlockingQueue(1000));
 
+    private ChunkRequest lastChunkRequest=null;
+    
     public Chunk() {
     }
 
@@ -55,6 +58,9 @@ public class Chunk extends Geometry {
             // Free memory from old mesh version
         }
 
+        setMaterial(parameter.material);
+        mesh = new Mesh();
+        node = parent;
         // Set to invisible for now.
         invisible = true;
 
@@ -89,6 +95,8 @@ public class Chunk extends Geometry {
             req.mb = new MeshBuilder();
             req.dualGridGenerator = new DualGridGenerator();
 
+            lastChunkRequest = req;
+            
             executor.execute(req);
 
         } else {
@@ -144,7 +152,8 @@ public class Chunk extends Geometry {
         cr.dualGridGenerator.generateDualGrid(cr.root, is, cr.mb, maxMSDistance,
                 cr.totalFrom, cr.totalTo, false);   //<-----DualGridVisualization = false
 
-        loadGeometry(cr);
+        cr.isFinished=true;
+      //  loadGeometry(cr);
     }
 
     private void loadGeometry(ChunkRequest chunkRequest) {
@@ -197,9 +206,12 @@ public class Chunk extends Geometry {
         Chunk origin;
         /// Whether this is an update of an existing tree
         boolean isUpdate;
+        
+        boolean isFinished=false;
 
         public void run() {
             origin.prepareGeometry(this);
+            executor.remove(this);
         }
     }
 
@@ -233,15 +245,28 @@ public class Chunk extends Geometry {
             return;
         }
 
+        
+        
+        if(lastChunkRequest != null)
+        {
+            if(lastChunkRequest.isFinished)
+            {
+                lastChunkRequest=null;
+                loadGeometry(lastChunkRequest);
+            }
+        }
+        
 
         //Real k = ((Real)mCamera->getViewport()->getActualHeight() / ((Real)2.0 * tan(mCamera->getFOVy().valueRadians() / (Real)2.0)));
         
-      //  float viewportHeight = Math.abs(camera.getViewPortBottom()-camera.getViewPortTop());
         //camera.
        // float tanFovY = Gegenkathete/Ankathete = W/2  / D
         
-      //  float k = viewportHeight / (2.0f * Math.tan()) / 2.0f);
-
+        float viewportHeight = Math.abs(camera.getViewPortBottom()-camera.getViewPortTop());
+        
+        float FOVy = (float)Math.PI/4.0f;
+        
+        float k = (float)(viewportHeight / (2.0f * Math.tan(FOVy/2)) / 2.0f);
         
         Vector3f camPos = camera.getLocation();
         

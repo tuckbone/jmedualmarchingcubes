@@ -17,7 +17,29 @@ public class OctreeNodeSplitPolicy {
     
     private float minSplitDistanceDiagonalFactor ;//= 1.5f;
     
-    private Vector3f[] const_position = new Vector3f[19];
+    private Vector3f[] const_position = {
+            new Vector3f(0.5f,0.0f, 0.0f),
+            new Vector3f(0.0f,0.0f, 0.5f),
+            new Vector3f(0.5f,0.0f, 0.5f),
+            new Vector3f(1.0f,0.0f, 0.5f),
+            new Vector3f(0.5f,0.0f, 1.0f),
+            
+            new Vector3f(0.0f,0.5f, 0.0f),
+            new Vector3f(0.5f,0.5f, 0.0f),
+            new Vector3f(1.0f,0.5f, 0.0f),
+            new Vector3f(0.0f,0.5f, 0.5f),
+            new Vector3f(0.5f,0.5f, 0.5f),
+            new Vector3f(1.0f,0.5f, 0.5f),
+            new Vector3f(0.0f,0.5f, 0.1f),
+            new Vector3f(0.5f,0.5f, 0.1f),
+            new Vector3f(1.0f,0.5f, 0.1f),
+            
+            new Vector3f(0.5f,1.0f, 0.0f),
+            new Vector3f(0.0f,1.0f, 0.5f),
+            new Vector3f(0.5f,1.0f, 0.5f),
+            new Vector3f(1.0f,1.0f, 0.5f),
+            new Vector3f(0.5f,1.0f, 1.0f),
+                };//new Vector3f[19];
     
     public OctreeNodeSplitPolicy(VolumeSource source, float maxCellSize)
     {
@@ -31,6 +53,8 @@ public class OctreeNodeSplitPolicy {
         this.minSplitDistanceDiagonalFactor=minSplitDistanceDiagonalFactor;
         
         int next=0;
+        
+        /* Automatic
         for(int x=0; x<=2; x++)
         {
             for(int y=0; y<=2; y++)
@@ -44,7 +68,7 @@ public class OctreeNodeSplitPolicy {
                     }
                 }
             }
-        }
+        }*/
     }
     
     public boolean doSplit(OctreeNode node, float geometricError)
@@ -81,7 +105,32 @@ public class OctreeNodeSplitPolicy {
         Vector3f[] gradients = new Vector3f[19];
         gradients[9] = centerGradient;
         
-        Vector3f[] position = createPosition(from, to);
+        Vector3f[] position = {
+            node.getCenterBackBottom(),
+            node.getCenterLeftBottom(),
+            node.getCenterBottom(),
+            node.getCenterRightBottom(),
+            node.getCenterFrontBottom(),
+            
+            node.getCenterBackLeft(),
+            node.getCenterBack(),
+            node.getCenterBackRight(),
+            node.getCenterLeft(),
+            node.getCenter(),
+            node.getCenterRight(),
+            node.getCenterFrontLeft(),
+            node.getCenterFront(),
+            node.getCenterFrontRight(),
+            
+            node.getCenterBackTop(),
+            node.getCenterLeftTop(),
+            node.getCenterTop(),
+            node.getCenterRightTop(),
+            node.getCenterFrontTop()};
+                
+          
+        //Auto generation
+        //createPosition(from, to);
         
         float error = 0;
         
@@ -106,6 +155,7 @@ public class OctreeNodeSplitPolicy {
             }        
         }
         
+        node.setCenterGradient(centerGradient);
         node.setCenterValue(centerValue);
         return false;
     }

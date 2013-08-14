@@ -61,7 +61,7 @@ public class Main extends SimpleApplication {
          
          
          /*
-          * Stuff not implemented yet
+          * Stuff not working yet
           * 
          ChunkParameters parameter = new ChunkParameters();
          
@@ -73,11 +73,12 @@ public class Main extends SimpleApplication {
          parameter.skirtFactor = 0.7f;
          parameter.updateFrom = Vector3f.ZERO;
          parameter.updateTo = Vector3f.ZERO;
+         parameter.source = source;
+         parameter.material = getMaterial();
          
          Chunk chunk = new Chunk();
-                 
          chunk.load(rootNode, Vector3f.ZERO, new Vector3f(256,128,256), 5, parameter);
-         */
+         stateManager.attach(new ChunkAppState(chunk));*/
 
 
         Geometry geom = new Geometry("", mesh);
