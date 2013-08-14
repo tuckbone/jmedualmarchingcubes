@@ -4,6 +4,7 @@
  */
 package mygame;
 
+import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 
 /**
@@ -37,4 +38,6 @@ import com.jme3.math.Vector3f;
         
         /// If an existing chunktree is to be partially updated, set this to the front upper right point of the (sub-)cube to be reloaded. Else, set both update vectors to zero (initial load).
         Vector3f updateTo;
+        
+        Material material;
     }

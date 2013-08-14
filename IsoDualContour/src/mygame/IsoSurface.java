@@ -46,10 +46,15 @@ public class IsoSurface {
         for (int i = 0; i < 8; i++) {
             if (volumeValue != null) {
                 values[i] = volumeValue[i];
-                   gradients[i] = volumeGradient[i];
             } else {
                 values[i] = source.getValue(corners[i]);
-                     gradients[i] = source.getGradient(corners[i]);
+            }
+            
+            if(volumeGradient != null)
+            {
+                gradients[i] = volumeGradient[i];
+            }else{
+                gradients[i] = source.getGradient(corners[i]);
             }
             if (values[i] >= ISO_LEVEL) {
                 cubeIndex |= 1 << i;
@@ -65,7 +70,7 @@ public class IsoSurface {
 
         Vector3f[] intersectionPoints = new Vector3f[12];
         Vector3f[] intersectionNormals = new Vector3f[12];
-
+         
          for(int i=0;i<12;i++)
               intersectionNormals[i] = new Vector3f();
 
@@ -158,11 +163,17 @@ public class IsoSurface {
         for (int i = 0; i < 4; i++) {
             if (volumeValues != null) {
                 values[i] = volumeValues[i];
-                gradients[i] = volumeGradient[i];
             } else {
                 values[i] = source.getValue(corners[i]);
+            }
+            
+            if(volumeGradient != null)
+            {
+                gradients[i] = volumeGradient[i];
+            }else{
                 gradients[i] = source.getGradient(corners[i]);
             }
+                
             if (values[i] >= ISO_LEVEL) {
                 squareIndex |= 1 << i;
             }
@@ -190,7 +201,15 @@ public class IsoSurface {
         intersectionPoints[4] = corners[indices[2]];
         intersectionPoints[6] = corners[indices[3]];
         
-        
+         
+         if(calculateNormalsNew==false)
+         {
+             for(int i=0;i<8;i+=2)
+             {
+                 intersectionNormals[i] = source.getGradient(intersectionPoints[i]);
+                 intersectionNormals[i].mult(source.getValue(intersectionPoints[i]) + 1.0f);
+             }
+         }
         
         if ((edge & 1) == 1) {
             intersectionPoints[1] =
@@ -213,13 +232,13 @@ public class IsoSurface {
 
            if(calculateNormalsNew)
            {
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i]], source.getGradient(intersectionPoints[triTable[squareIndex][i]]));
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i + 1]], source.getGradient(intersectionPoints[triTable[squareIndex][i + 1]]));
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i + 2]], source.getGradient(intersectionPoints[triTable[squareIndex][i + 2]]));
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i]], source.getGradient(intersectionPoints[msTriangles[squareIndex][i]]));
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i + 1]], source.getGradient(intersectionPoints[msTriangles[squareIndex][i + 1]]));
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i + 2]], source.getGradient(intersectionPoints[msTriangles[squareIndex][i + 2]]));
            }else{
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i]], intersectionNormals[triTable[squareIndex][i]]);
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i + 1]], intersectionNormals[triTable[squareIndex][i + 1]]);
-                mb.addVertex(intersectionPoints[triTable[squareIndex][i + 2]], intersectionNormals[triTable[squareIndex][i + 2]]);
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i]], intersectionNormals[msTriangles[squareIndex][i]]);
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i + 1]], intersectionNormals[msTriangles[squareIndex][i + 1]]);
+                mb.addVertex(intersectionPoints[msTriangles[squareIndex][i + 2]], intersectionNormals[msTriangles[squareIndex][i + 2]]);
            }
         }
     }
@@ -574,4 +593,27 @@ public class IsoSurface {
         {0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
+    
+    
+    private static final int msTriangles[][] =
+    {
+        {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, // Nothing intersects
+        {7, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},    // 0
+        {3, 2, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},    // 1
+        {7, 2, 0, 7, 3, 2, -1, -1, -1, -1, -1, -1, -1},       // 0 1
+        {5, 4, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},    // 2
+        {7, 1, 0, 3, 5, 4, -1, -1, -1, -1, -1, -1, -1},       // 0 2
+        {1, 4, 2, 1, 5, 4, -1, -1, -1, -1, -1, -1, -1},       // 1 2
+        {0, 7, 5, 0, 5, 4, 0, 4, 2, -1, -1, -1, -1},          // 0 1 2
+        {7, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},    // 3
+        {0, 5, 1, 0, 6, 5, -1, -1, -1, -1, -1, -1, -1},       // 0 3
+        {1, 3, 2, 7, 6, 5, -1, -1, -1, -1, -1, -1, -1},       // 1 3
+        {3, 6, 5, 3, 0, 6, 3, 2, 0, -1, -1, -1, -1},          // 0 1 3
+        {7, 6, 4, 7, 4, 3, -1, -1, -1, -1, -1, -1, -1},       // 2 3
+        {3, 1, 0, 3, 0, 6, 3, 6, 4, -1, -1, -1, -1},          // 0 2 3
+        {2, 1, 7, 2, 7, 6, 2, 6, 4, -1, -1, -1, -1},          // 1 2 3
+        {6, 2, 0, 6, 4, 2, -1, -1, -1, -1, -1, -1, -1},       // 0 1 2 3
+        {1, 0, 7, 1, 7, 5, 1, 5, 4, 1, 4, 3, -1},             // 0 2 alternative
+        {1, 3, 2, 1, 5, 3, 1, 6, 5, 1, 7, 6, -1}              // 1 3 alternative
+    };
 }
