@@ -75,51 +75,51 @@ public class IsoSurface {
               intersectionNormals[i] = new Vector3f();
 
         /* Find the vertices where the surface intersects the cube */
-        if ((edge & 1) == 1) {
+        if ((edge & 1) != 0) {
             intersectionPoints[0] =
                     interpolate(corners[0], corners[1], values[0], values[1], gradients[0], gradients[1], intersectionNormals[0]);
         }
-        if ((edge & 2) == 2) {
+        if ((edge & 2) != 0) {
             intersectionPoints[1] =
                     interpolate(corners[1], corners[2], values[1], values[2], gradients[1], gradients[2], intersectionNormals[1]);
         }
-        if ((edge & 4) == 4) {
+        if ((edge & 4) != 0) {
             intersectionPoints[2] =
                     interpolate(corners[2], corners[3], values[2], values[3], gradients[2], gradients[3], intersectionNormals[2]);
         }
-        if ((edge & 8) == 8) {
+        if ((edge & 8) != 0) {
             intersectionPoints[3] =
                     interpolate(corners[3], corners[0], values[3], values[0], gradients[3], gradients[0], intersectionNormals[3]);
         }
-        if ((edge & 16) == 16) {
+        if ((edge & 16) != 0) {
             intersectionPoints[4] =
                     interpolate(corners[4], corners[5], values[4], values[5], gradients[4], gradients[5], intersectionNormals[4]);
         }
-        if ((edge & 32) == 32) {
+        if ((edge & 32) != 0) {
             intersectionPoints[5] =
                     interpolate(corners[5], corners[6], values[5], values[6], gradients[5], gradients[6], intersectionNormals[5]);
         }
-        if ((edge & 64) == 64) {
+        if ((edge & 64) != 0) {
             intersectionPoints[6] =
                     interpolate(corners[6], corners[7], values[6], values[7], gradients[6], gradients[7], intersectionNormals[6]);
         }
-        if ((edge & 128) == 128) {
+        if ((edge & 128) != 0) {
             intersectionPoints[7] =
                     interpolate(corners[7], corners[4], values[7], values[4], gradients[7], gradients[4], intersectionNormals[7]);
         }
-        if ((edge & 256) == 256) {
+        if ((edge & 256) != 0) {
             intersectionPoints[8] =
                     interpolate(corners[0], corners[4], values[0], values[4], gradients[0], gradients[4], intersectionNormals[8]);
         }
-        if ((edge & 512) == 512) {
+        if ((edge & 512) != 0) {
             intersectionPoints[9] =
                     interpolate(corners[1], corners[5], values[1], values[5], gradients[1], gradients[5], intersectionNormals[9]);
         }
-        if ((edge & 1024) == 1024) {
+        if ((edge & 1024) != 0) {
             intersectionPoints[10] =
                     interpolate(corners[2], corners[6], values[2], values[6], gradients[2], gradients[6], intersectionNormals[10]);
         }
-        if ((edge & 2048) == 2048) {
+        if ((edge & 2048) != 0) {
             intersectionPoints[11] =
                     interpolate(corners[3], corners[7], values[3], values[7], gradients[3], gradients[7], intersectionNormals[11]);
         }
@@ -228,7 +228,7 @@ public class IsoSurface {
                     interpolate(corners[indices[3]], corners[indices[0]], values[3], values[0], gradients[3], gradients[0], intersectionNormals[7]);
         }
         
-       for (int i = 0; triTable[squareIndex][i] != -1; i += 3) {
+       for (int i = 0; triTable[squareIndex][i] != -1; i += 3) { //Why Marching Cubes Table here?
 
            if(calculateNormalsNew)
            {
@@ -265,79 +265,62 @@ public class IsoSurface {
         return (p);
     }
     
-     private Vector3f interpolate(Vector3f p1, Vector3f p2,
-     float valp1, float valp2, Vector3f gradientp1, Vector3f gradientp2, Vector3f normal) {
+     private Vector3f interpolate(Vector3f v0, Vector3f v1,
+     float val0, float val1, Vector3f gradient0, Vector3f gradient1, Vector3f normal) {
+     
+     if (Math.abs(val0 - ISO_LEVEL) <= 1.192092896e-07F) {
+        normal.x = gradient0.x;
+        normal.y = gradient0.y;
+        normal.z = gradient0.z;
+        return (v0);
+     }
+     if (Math.abs(val1 - ISO_LEVEL) <= 1.192092896e-07F) {
+        normal.x = gradient1.x;
+        normal.y = gradient1.y;
+        normal.z = gradient1.z;
+        return (v1);
+     }
+     if (Math.abs(val1 - val0) <= 1.192092896e-07F) {
+        normal.x = gradient0.x;
+        normal.y = gradient0.y;
+        normal.z = gradient0.z;
+        return (v0);
+     }
+     float mu = (ISO_LEVEL - val0) / (val1 - val0);
 
-     float mu;
-     Vector3f p = new Vector3f();
-     if (Math.abs(ISO_LEVEL - valp1) < 1.192092896e-07F) {
-     normal.x = gradientp2.x;
-     normal.y = gradientp2.y;
-     normal.z = gradientp2.z;
-     return (p1);
-     }
-     if (Math.abs(ISO_LEVEL - valp2) < 1.192092896e-07F) {
-     normal.x = gradientp2.x;
-     normal.y = gradientp2.y;
-     normal.z = gradientp2.z;
-     return (p2);
-     }
-     if (Math.abs(valp1 - valp2) < 1.192092896e-07F) {
-     normal.x = gradientp1.x;
-     normal.y = gradientp1.y;
-     normal.z = gradientp1.z;
-     return (p1);
-     }
-     mu = (ISO_LEVEL - valp1) / (valp2 - valp1);
-
-     normal.x = gradientp1.x + mu * (gradientp2.x - gradientp1.x);
-     normal.y = gradientp1.y + mu * (gradientp2.y - gradientp1.y);
-     normal.z = gradientp1.z + mu * (gradientp2.z - gradientp1.z);
+     normal.x = gradient0.x + mu * (gradient1.x - gradient0.x);
+     normal.y = gradient0.y + mu * (gradient1.y - gradient0.y);
+     normal.z = gradient0.z + mu * (gradient1.z - gradient0.z);
 
      normal.normalizeLocal();
-
-     p.x = p1.x + mu * (p2.x - p1.x);
-     p.y = p1.y + mu * (p2.y - p1.y);
-     p.z = p1.z + mu * (p2.z - p1.z);
+    Vector3f p = new Vector3f();
+    
+     p.x = v0.x + mu * (v1.x - v0.x);
+     p.y = v0.y + mu * (v1.y - v0.y);
+     p.z = v0.z + mu * (v1.z - v0.z);
      return (p);
      }
      
     private static final int edgeTable[] = {
-        0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
-        0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
-        0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
-        0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
-        0x230, 0x339, 0x33, 0x13a, 0x636, 0x73f, 0x435, 0x53c,
-        0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
-        0x3a0, 0x2a9, 0x1a3, 0xaa, 0x7a6, 0x6af, 0x5a5, 0x4ac,
-        0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
-        0x460, 0x569, 0x663, 0x76a, 0x66, 0x16f, 0x265, 0x36c,
-        0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
-        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff, 0x3f5, 0x2fc,
-        0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
-        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55, 0x15c,
-        0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
-        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc,
-        0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
-        0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
-        0xcc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
-        0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
-        0x15c, 0x55, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
-        0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
-        0x2fc, 0x3f5, 0xff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
-        0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
-        0x36c, 0x265, 0x16f, 0x66, 0x76a, 0x663, 0x569, 0x460,
-        0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
-        0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa, 0x1a3, 0x2a9, 0x3a0,
-        0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
-        0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33, 0x339, 0x230,
-        0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
-        0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
-        0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-        0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
+        0x000, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c, 0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00, 
+        0x190, 0x099, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c, 0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90, 
+        0x230, 0x339, 0x033, 0x13a, 0x636, 0x73f, 0x435, 0x53c, 0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30, 
+        0x3a0, 0x2a9, 0x1a3, 0x0aa, 0x7a6, 0x6af, 0x5a5, 0x4ac, 0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0, 
+        0x460, 0x569, 0x663, 0x76a, 0x066, 0x16f, 0x265, 0x36c, 0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60, 
+        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0x0ff, 0x3f5, 0x2fc, 0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0, 
+        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x055, 0x15c, 0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950, 
+        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0x0cc, 0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0, 
+        0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc, 0x0cc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0, 
+        0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c, 0x15c, 0x055, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650, 
+        0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc, 0x2fc, 0x3f5, 0x0ff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0, 
+        0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c, 0x36c, 0x265, 0x16f, 0x066, 0x76a, 0x663, 0x569, 0x460, 
+        0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac, 0x4ac, 0x5a5, 0x6af, 0x7a6, 0x0aa, 0x1a3, 0x2a9, 0x3a0, 
+        0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c, 0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x033, 0x339, 0x230, 
+        0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c, 0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x099, 0x190, 
+        0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c, 0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x000
     };
     private static final int triTable[][] = {
-        {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+             {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
