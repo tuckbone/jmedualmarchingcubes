@@ -39,7 +39,7 @@ public class OctreeNode {
             Vector3f yWidth = new Vector3f();
             Vector3f zWidth = new Vector3f();
 
-            getChildrenDimensions(newCenter, xWidth, yWidth, zWidth);
+            getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
 
             children[0] = new OctreeNode(from, newCenter);
             children[1] = new OctreeNode(from.add(xWidth), newCenter.add(xWidth));
@@ -54,15 +54,17 @@ public class OctreeNode {
                 children[i].split(splitPolicy, source, geometricError);
             }
 
+             
         } else {
             if (centerValue == 0 && centerGradient.equals(Vector3f.ZERO)) {
                 centerGradient = source.getGradient(getCenter());
                 centerValue = source.getValue(getCenter());
             }
         }
+
     }
 
-    private void getChildrenDimensions(Vector3f center, Vector3f width, Vector3f height, Vector3f depth) {
+    /*private void getChildrenDimensions(Vector3f center, Vector3f width, Vector3f height, Vector3f depth) {
         center.x = (to.x - from.x) / 2.0f;
         center.y = (to.y - from.y) / 2.0f;
         center.z = (to.z - from.z) / 2.0f;
@@ -77,7 +79,7 @@ public class OctreeNode {
         depth.y = 0.0f;
         depth.z = center.z;
         center.addLocal(from);
-    }
+    }*/
     
     
      public static void getChildrenDimensions(Vector3f from, Vector3f to, Vector3f center, Vector3f width, Vector3f height, Vector3f depth)
