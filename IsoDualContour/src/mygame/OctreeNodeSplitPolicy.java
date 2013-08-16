@@ -30,9 +30,9 @@ public class OctreeNodeSplitPolicy {
             new Vector3f(0.0f,0.5f, 0.5f),
             new Vector3f(0.5f,0.5f, 0.5f),
             new Vector3f(1.0f,0.5f, 0.5f),
-            new Vector3f(0.0f,0.5f, 0.1f),
-            new Vector3f(0.5f,0.5f, 0.1f),
-            new Vector3f(1.0f,0.5f, 0.1f),
+            new Vector3f(0.0f,0.5f, 1.0f),
+            new Vector3f(0.5f,0.5f, 1.0f),
+            new Vector3f(1.0f,0.5f, 1.0f),
             
             new Vector3f(0.5f,1.0f, 0.0f),
             new Vector3f(0.0f,1.0f, 0.5f),
@@ -102,8 +102,8 @@ public class OctreeNodeSplitPolicy {
         float f110 = source.getValue(node.getCorner5());
         float f111 = source.getValue(to);
         
-        Vector3f[] gradients = new Vector3f[19];
-        gradients[9] = centerGradient;
+       // Vector3f[] gradients = new Vector3f[19];
+      //  gradients[9] = centerGradient;
         
         Vector3f[] position = {
             node.getCenterBackBottom(),
@@ -134,7 +134,7 @@ public class OctreeNodeSplitPolicy {
         
         float error = 0;
         
-        for(int i=0;i<19;i++)
+        for(int i=0;i<19;++i)
         {
             float  value = source.getValue(position[i]);
             Vector3f gradient = source.getGradient(position[i]);
