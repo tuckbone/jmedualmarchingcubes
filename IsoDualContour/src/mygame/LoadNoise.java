@@ -4,7 +4,8 @@
  */
 package mygame;
 
-import mygame.source.ShortGridSource;
+import com.jme3.math.Vector3f;
+import mygame.dualmarchingcubes.source.FloatGridSource;
 
 /**
  *
@@ -12,7 +13,7 @@ import mygame.source.ShortGridSource;
  */
 public class LoadNoise {
     
-    public static void loadNoise(int locX, int locY, int locZ, int sizeX, int sizeY, int sizeZ, float roughness, ShortGridSource source) { 
+    public static void loadNoise(int locX, int locY, int locZ, int sizeX, int sizeY, int sizeZ, float roughness, FloatGridSource source) { 
 
         OldNoise noise = new OldNoise(null, roughness, sizeX, sizeZ);
         noise.initialise();
@@ -37,10 +38,15 @@ public class LoadNoise {
             for (int z = 0; z < row.length; z++) {
                 int blockHeight = (int)newGrid[x][z];
                 
-                for (int y = 0; y < blockHeight-1; y++) {
+                for (int y = 0; y < blockHeight-2; y++) {
+               // for (int y = 0; y < 32; y++) {
+                    
+                  //  source.setVolumeGridValue(locX + x, locY + y, locZ + z, (blockHeight-y));
+                    
                     source.setVolumeGridValue(locX + x, locY + y, locZ + z, (short)1);
                     
-                    if(y == blockHeight-1)
+                    
+                    if(y == blockHeight-3)
                     {
                         float rest=newGrid[x][z]-(float)blockHeight;
                         source.setVolumeGridValue(locX + x, locY + y, locZ + z, (short)rest);

@@ -16,7 +16,7 @@ public class OldNoise {
     public OldNoise(Random rand, float roughness, int width, int height) {
         this.roughness_ = (roughness / width);
         this.grid_ = new float[width][height];
-        this.rand_ = (rand == null ? new Random() : rand);
+        this.rand_ = (rand == null ? new Random(15234) : rand);
         initialise();
     }
 
