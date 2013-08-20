@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package mygame;
+package mygame.dualmarchingcubes;
 
 import com.jme3.math.Vector3f;
 import java.util.LinkedList;
@@ -52,7 +52,7 @@ public class DualGridGenerator {
     public void nodeProc(OctreeNode n)
     {
         if(n.isSubdivided())
-        {
+        {   
             for(int i=0;i<8;i++)
             {
                 nodeProc(n.getChild(i));
@@ -62,7 +62,7 @@ public class DualGridGenerator {
             faceProcXY(n.getChild(1),n.getChild(2));
             faceProcXY(n.getChild(4),n.getChild(7));
             faceProcXY(n.getChild(5),n.getChild(6));
-            
+              
             faceProcZY(n.getChild(0),n.getChild(1));
             faceProcZY(n.getChild(3),n.getChild(2));
             faceProcZY(n.getChild(4),n.getChild(5));
@@ -78,7 +78,7 @@ public class DualGridGenerator {
 
             edgeProcY(n.getChild(0), n.getChild(1), n.getChild(2), n.getChild(3));
             edgeProcY(n.getChild(4), n.getChild(5), n.getChild(6), n.getChild(7));
-
+            
             edgeProcZ(n.getChild(7), n.getChild(6), n.getChild(2), n.getChild(3));
             edgeProcZ(n.getChild(4), n.getChild(5), n.getChild(1), n.getChild(0));
 
@@ -100,7 +100,7 @@ public class DualGridGenerator {
             OctreeNode c5 = n0.isSubdivided() ? n0.getChild(6) : n0;
             OctreeNode c6 = n1.isSubdivided() ? n1.getChild(5) : n1;
             OctreeNode c7 = n1.isSubdivided() ? n1.getChild(4) : n1;
-        
+                
             faceProcXY(c0, c3);
             faceProcXY(c1, c2);
             faceProcXY(c4, c7);
@@ -110,7 +110,7 @@ public class DualGridGenerator {
             edgeProcX(c1, c2, c6, c5);
             edgeProcY(c0, c1, c2, c3);
             edgeProcY(c4, c5, c6, c7);
-    
+             
             vertProc(c0, c1, c2, c3, c4, c5, c6, c7);
         }
     }
@@ -128,12 +128,12 @@ public class DualGridGenerator {
             OctreeNode c5 = n1.isSubdivided() ? n1.getChild(4) : n1;
             OctreeNode c6 = n1.isSubdivided() ? n1.getChild(7) : n1;
             OctreeNode c7 = n0.isSubdivided() ? n0.getChild(6) : n0;
-        
+            
             faceProcZY(c0, c1);
             faceProcZY(c3, c2);
             faceProcZY(c4, c5);
             faceProcZY(c7, c6);
-    
+            
             edgeProcY(c0, c1, c2, c3);
             edgeProcY(c4, c5, c6, c7);
             edgeProcZ(c7, c6, c2, c3);
@@ -162,12 +162,12 @@ public class DualGridGenerator {
             faceProcXZ(c5, c1);
             faceProcXZ(c7, c3);
             faceProcXZ(c6, c2);
-    
+        
             edgeProcX(c0, c3, c7, c4);
             edgeProcX(c1, c2, c6, c5);
             edgeProcZ(c7, c6, c2, c3);
             edgeProcZ(c4, c5, c1, c0);
-            
+           
     
             vertProc(c0, c1, c2, c3, c4, c5, c6, c7);
         }
