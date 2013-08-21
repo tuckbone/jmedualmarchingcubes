@@ -61,6 +61,7 @@ public class Chunk extends Geometry {
         setMaterial(parameter.material);
         mesh = new Mesh();
         node = parent;
+        parent.attachChild(this);
         // Set to invisible for now.
         invisible = true;
 
@@ -76,7 +77,7 @@ public class Chunk extends Geometry {
 
     private void loadChunk(Node parent, Vector3f from, Vector3f to, Vector3f totalFrom, Vector3f totalTo,
             int level, int maxLevels, ChunkParameters parameter) {
-        parent.attachChild(this);
+        //node.attachChild(this);
 
         if (parameter.createGeometryFromLevel == 0 || level <= parameter.createGeometryFromLevel) {
             //new Request()
@@ -143,8 +144,6 @@ public class Chunk extends Geometry {
     }
 
     private void prepareGeometry(ChunkRequest cr) {
-        System.out.println("prepareGeometry");
-
         OctreeNodeSplitPolicy policy = new OctreeNodeSplitPolicy(cr.parameter.source, cr.parameter.errorMultiplicator * cr.parameter.baseError);
         error = (float) cr.level * cr.parameter.errorMultiplicator * cr.parameter.baseError;
         cr.root.split(policy, cr.parameter.source, error);
@@ -154,14 +153,10 @@ public class Chunk extends Geometry {
                 cr.totalFrom, cr.totalTo, false);   //<-----DualGridVisualization = false
 
         cr.isFinished = true;
-        System.out.println("prepareGeometry Finished");
         //  loadGeometry(cr);
     }
 
     private void loadGeometry(ChunkRequest chunkRequest) {
-
-        System.out.println("load Geometry");
-
         invisible = (chunkRequest.mb.countVertices() == 0);
 
         // chunkRequest.origin.box = chunkRequest.mb.getBoundingBox();
@@ -170,7 +165,7 @@ public class Chunk extends Geometry {
             if (chunkRequest.isUpdate) {
                 node.detachChild(this);
             }
-            node.attachChild(this);
+            //node.attachChild(this);
          }
 
         //node.detachChild(this); //<-------------
@@ -252,7 +247,7 @@ public class Chunk extends Geometry {
         }
 
         // This might be a chunk on a lower LOD level without geometry, so lets just proceed here.
-        if (mesh.getTriangleCount() == 0 && children != null) {
+        if (mesh.getTriangleCount() <= 0 && children != null) {
             for (int i = 0; i < children.length; i++) {
                 children[i].frameStarted(camera);
             }
@@ -307,9 +302,12 @@ public class Chunk extends Geometry {
         }
         if (shared.volumeVisible) {
             if (visible) {
-                node.attachChild(this);
+                setCullHint(CullHint.Never);
+               // node.attachChild(this);
             } else {
-                node.detachChild(this);
+                setCullHint(CullHint.Always);
+                
+              //  node.detachChild(this);
             }
             //this.visible = visible;
         }

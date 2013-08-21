@@ -160,18 +160,18 @@ public class IsoSurface {
         float values[] = new float[4];
         Vector3f gradients[] = new Vector3f[4];
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; ++i) {
             if (volumeValues != null) {
-                values[i] = volumeValues[i];
+                values[i] = volumeValues[indices[i]];
             } else {
-                values[i] = source.getValue(corners[i]);
+                values[i] = source.getValue(corners[indices[i]]);
             }
             
             if(volumeGradient != null)
             {
-                gradients[i] = volumeGradient[i];
+                gradients[i] = volumeGradient[indices[i]];
             }else{
-                gradients[i] = source.getGradient(corners[i]);
+                gradients[i] = source.getGradient(corners[indices[i]]);
             }
                 
             if (values[i] >= ISO_LEVEL) {
@@ -190,17 +190,15 @@ public class IsoSurface {
         Vector3f[] intersectionPoints = new Vector3f[8];
         Vector3f[] intersectionNormals = new Vector3f[8];
         
-       for(int i=0;i<8;i++)
-       {
-              intersectionNormals[i] = new Vector3f();
-              
-       }
-
         intersectionPoints[0] = corners[indices[0]];
         intersectionPoints[2] = corners[indices[1]];
         intersectionPoints[4] = corners[indices[2]];
         intersectionPoints[6] = corners[indices[3]];
         
+       for(int i=0;i<8;i++)
+       {
+              intersectionNormals[i] = new Vector3f();      
+       }
          
          if(calculateNormalsNew==false)
          {
@@ -211,19 +209,19 @@ public class IsoSurface {
              }
          }
         
-        if ((edge & 1) == 1) {
+        if ((edge & 1) != 0) {
             intersectionPoints[1] =
                     interpolate(corners[indices[0]], corners[indices[1]], values[0], values[1], gradients[0], gradients[1], intersectionNormals[1]);
         }
-        if ((edge & 2) == 2) {
+        if ((edge & 2) != 0) {
             intersectionPoints[3] =
                     interpolate(corners[indices[1]], corners[indices[2]], values[1], values[2], gradients[1], gradients[2], intersectionNormals[3]);
         }
-        if ((edge & 4) == 4) {
+        if ((edge & 4) != 0) {
             intersectionPoints[5] =
                     interpolate(corners[indices[2]], corners[indices[3]], values[2], values[3], gradients[2], gradients[3], intersectionNormals[5]);
         }
-        if ((edge & 8) == 8) {
+        if ((edge & 8) != 0) {
             intersectionPoints[7] =
                     interpolate(corners[indices[3]], corners[indices[0]], values[3], values[0], gradients[3], gradients[0], intersectionNormals[7]);
         }

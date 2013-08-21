@@ -7,6 +7,7 @@ import mygame.dualmarchingcubes.IsoSurface;
 import mygame.dualmarchingcubes.VolumeSource;
 import mygame.dualmarchingcubes.OctreeNodeSplitPolicy;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.VideoRecorderAppState;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -23,11 +24,14 @@ import mygame.dualmarchingcubes.Chunk;
 import mygame.dualmarchingcubes.ChunkAppState;
 import mygame.dualmarchingcubes.ChunkParameters;
 import mygame.dualmarchingcubes.source.FloatGridSource;
+import mygame.sourcegeneration.GeneratorData;
+import mygame.sourcegeneration.GoursatSurface;
+import mygame.sourcegeneration.SourceGenerator;
 
 public class Main extends SimpleApplication {
 
     private Geometry geom;
-    private VolumeSource source;
+    private FloatGridSource source;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -37,15 +41,20 @@ public class Main extends SimpleApplication {
     
     @Override
     public void simpleInitApp() {
-        source = new FloatGridSource(new Vector3f(1f, 1f, 1f), 256, 128, 256, 0);
-        LoadNoise.loadNoise(0, 0, 0, 256, 128, 256, 1f, (FloatGridSource)source);
+        //source = new FloatGridSource(new Vector3f(1f, 1f, 1f), 256, 128, 256, 0);
+      //  LoadNoise.loadNoise(0, 0, 0, 256, 128, 256, 1f, (FloatGridSource)source);
 
+        source = SourceGenerator.getSource(new GoursatSurface(), 5);
         
+        //Mesh mesh = new Mesh();
+       // System.out.println(mesh.getTriangleCount());
+        
+       // return;
         /*
          * Stuff not working yet
          * */
         
-         /*ChunkParameters parameter = new ChunkParameters();
+         ChunkParameters parameter = new ChunkParameters();
          
          parameter.baseError=1.8f;
          parameter.createGeometryFromLevel = 3;
@@ -59,17 +68,17 @@ public class Main extends SimpleApplication {
          parameter.material = getMaterial();
          
          Chunk chunk = new Chunk();
-         chunk.load(rootNode, Vector3f.ZERO, new Vector3f(256,128,256), 5, parameter);
-         stateManager.attach(new ChunkAppState(chunk));*/
+         chunk.load(rootNode, Vector3f.ZERO, new Vector3f(source.getWidth(),source.getHeight(),source.getDepth()), 5, parameter);
+         stateManager.attach(new ChunkAppState(chunk));
 
-         
+         /*
         geom = new Geometry("");
         geom.setMaterial(getMaterial());
         
         rootNode.attachChild(geom);
 
         dualMarchingCubes();
-         
+         */
 
         
          makeLight();

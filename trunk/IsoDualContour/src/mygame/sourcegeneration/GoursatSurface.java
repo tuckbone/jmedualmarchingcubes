@@ -4,6 +4,8 @@
  */
 package mygame.sourcegeneration;
 
+import com.jme3.math.FastMath;
+
 /**
  *
  * @author Karsten
@@ -20,6 +22,12 @@ public class GoursatSurface implements GeneratorData{
     }
 
     public float getValue(float x, float y, float z) {
-        return (float)(Math.pow(x,4) + Math.pow(y,4) + Math.pow(z,4) - 1.5 * (x*x  + y*y + z*z) + 1);
+        
+        float x2 = x*x;
+        float y2 = y*y;
+        float z2 = z*z;
+        
+         return (float)(x2*x2 + y2*y2 + z2*z2 - 1.5 * (x2  + y2 + z2) + 1);
+       // return (float)(FastMath.pow(x,4) + FastMath.pow(y,4) + FastMath.pow(z,4) - 1.5 * (x*x  + y*y + z*z) + 1);
     }
 }
