@@ -11,12 +11,17 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
+import mygame.dualmarchingcubes.Chunk;
+import mygame.dualmarchingcubes.ChunkAppState;
+import mygame.dualmarchingcubes.ChunkParameters;
 import mygame.dualmarchingcubes.source.FloatGridSource;
 
 public class Main extends SimpleApplication {
@@ -29,16 +34,18 @@ public class Main extends SimpleApplication {
         app.start();
     }
 
+    
     @Override
     public void simpleInitApp() {
-
         source = new FloatGridSource(new Vector3f(1f, 1f, 1f), 256, 128, 256, 0);
         LoadNoise.loadNoise(0, 0, 0, 256, 128, 256, 1f, (FloatGridSource)source);
 
+        
         /*
          * Stuff not working yet
-         * 
-         ChunkParameters parameter = new ChunkParameters();
+         * */
+        
+         /*ChunkParameters parameter = new ChunkParameters();
          
          parameter.baseError=1.8f;
          parameter.createGeometryFromLevel = 3;
@@ -55,12 +62,15 @@ public class Main extends SimpleApplication {
          chunk.load(rootNode, Vector3f.ZERO, new Vector3f(256,128,256), 5, parameter);
          stateManager.attach(new ChunkAppState(chunk));*/
 
+         
         geom = new Geometry("");
         geom.setMaterial(getMaterial());
         
         rootNode.attachChild(geom);
 
         dualMarchingCubes();
+         
+
         
          makeLight();
     }
@@ -103,7 +113,6 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        //TODO: add update code
     }
 
     @Override

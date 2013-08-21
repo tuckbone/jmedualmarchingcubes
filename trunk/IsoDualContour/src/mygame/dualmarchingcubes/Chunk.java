@@ -4,6 +4,7 @@
  */
 package mygame.dualmarchingcubes;
 
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
@@ -22,18 +23,15 @@ public class Chunk extends Geometry {
     /// Holds the error associated with this chunk.
     private float error;
     private Chunk children[];
-    
     /// Flag whether this node will never be shown.
     private boolean invisible;
-    
     private boolean isRoot = false;
     /// To attach this node to.
     private Node node;
     private ChunkTreeSharedData shared;
     private static ThreadPoolExecutor executor = new ThreadPoolExecutor(8, 10000, 100, TimeUnit.SECONDS, new ArrayBlockingQueue(1000));
+    private ChunkRequest lastChunkRequest = null;
 
-    private ChunkRequest lastChunkRequest=null;
-    
     public Chunk() {
     }
 
@@ -56,6 +54,8 @@ public class Chunk extends Geometry {
         if (parameter.updateFrom.equals(Vector3f.ZERO) == false || parameter.updateTo.equals(Vector3f.ZERO) == false) {
             // Early out if an update of a part of the tree volume is going on and this chunk is outside of the area.
             // Free memory from old mesh version
+            
+            //For Updates not filled yet
         }
 
         setMaterial(parameter.material);
@@ -78,7 +78,6 @@ public class Chunk extends Geometry {
             int level, int maxLevels, ChunkParameters parameter) {
         parent.attachChild(this);
 
-
         if (parameter.createGeometryFromLevel == 0 || level <= parameter.createGeometryFromLevel) {
             //new Request()
 
@@ -96,7 +95,7 @@ public class Chunk extends Geometry {
             req.dualGridGenerator = new DualGridGenerator();
 
             lastChunkRequest = req;
-            
+
             executor.execute(req);
 
         } else {
@@ -125,7 +124,7 @@ public class Chunk extends Geometry {
 
             children[0].doLoad(parent, from, newCenter, totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[1].doLoad(parent, from.add(xWidth), newCenter.add(xWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
-            children[2].doLoad(parent, from.add(xWidth).add(yWidth), newCenter.add(xWidth).add(yWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[2].doLoad(parent, from.add(xWidth).add(zWidth), newCenter.add(xWidth).add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[3].doLoad(parent, from.add(zWidth), newCenter.add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[4].doLoad(parent, from.add(yWidth), newCenter.add(yWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[5].doLoad(parent, from.add(yWidth.add(xWidth)), newCenter.add(yWidth).add(xWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
@@ -144,6 +143,8 @@ public class Chunk extends Geometry {
     }
 
     private void prepareGeometry(ChunkRequest cr) {
+        System.out.println("prepareGeometry");
+
         OctreeNodeSplitPolicy policy = new OctreeNodeSplitPolicy(cr.parameter.source, cr.parameter.errorMultiplicator * cr.parameter.baseError);
         error = (float) cr.level * cr.parameter.errorMultiplicator * cr.parameter.baseError;
         cr.root.split(policy, cr.parameter.source, error);
@@ -152,22 +153,27 @@ public class Chunk extends Geometry {
         cr.dualGridGenerator.generateDualGrid(cr.root, is, cr.mb, maxMSDistance,
                 cr.totalFrom, cr.totalTo, false);   //<-----DualGridVisualization = false
 
-        cr.isFinished=true;
-      //  loadGeometry(cr);
+        cr.isFinished = true;
+        System.out.println("prepareGeometry Finished");
+        //  loadGeometry(cr);
     }
 
     private void loadGeometry(ChunkRequest chunkRequest) {
 
-        chunkRequest.origin.invisible = (chunkRequest.mb.countVertices()==0);
-        
-       // chunkRequest.origin.box = chunkRequest.mb.getBoundingBox();
-        
+        System.out.println("load Geometry");
+
+        invisible = (chunkRequest.mb.countVertices() == 0);
+
+        // chunkRequest.origin.box = chunkRequest.mb.getBoundingBox();
+
         if (!invisible) {
             if (chunkRequest.isUpdate) {
                 node.detachChild(this);
             }
             node.attachChild(this);
-        }
+         }
+
+        //node.detachChild(this); //<-------------
 
         setMesh(chunkRequest.mb.generateMesh());
         updateModelBound();
@@ -178,10 +184,9 @@ public class Chunk extends Geometry {
 
         float maxScreenSpaceError;
         float scale;
-       // boolean octreeVisible;
-        
-         /// Another visibility flag to be user setable.
-        boolean volumeVisible;
+        // boolean octreeVisible;
+        /// Another visibility flag to be user setable.
+        boolean volumeVisible=true;
     }
 
     private class ChunkRequest implements Runnable {
@@ -206,8 +211,7 @@ public class Chunk extends Geometry {
         Chunk origin;
         /// Whether this is an update of an existing tree
         boolean isUpdate;
-        
-        boolean isFinished=false;
+        boolean isFinished = false;
 
         public void run() {
             origin.prepareGeometry(this);
@@ -225,56 +229,54 @@ public class Chunk extends Geometry {
         return Math.abs(centralValue) <= (to.subtract(from)).length() * 1.5f;
     }
 
+    public void waitForGeometry() {
+        if (lastChunkRequest != null) {
+            if (lastChunkRequest.isFinished) {
+                loadGeometry(lastChunkRequest);
+                lastChunkRequest = null;
+            }
+        }
+
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                children[i].waitForGeometry();
+            }
+
+        }
+    }
+
     public void frameStarted(Camera camera) {
+
         if (invisible) {
             return;
         }
 
-        if (children != null) // renderOp.vertexData &&   ??
-        {
+        // This might be a chunk on a lower LOD level without geometry, so lets just proceed here.
+        if (mesh.getTriangleCount() == 0 && children != null) {
             for (int i = 0; i < children.length; i++) {
                 children[i].frameStarted(camera);
             }
-
             return;
         }
-
 
         if (camera == null) {
             setChunkVisible(true, false);
             return;
         }
 
-        
-        
-        if(lastChunkRequest != null)
-        {
-            if(lastChunkRequest.isFinished)
-            {
-                lastChunkRequest=null;
-                loadGeometry(lastChunkRequest);
-            }
-        }
-        
 
-        //Real k = ((Real)mCamera->getViewport()->getActualHeight() / ((Real)2.0 * tan(mCamera->getFOVy().valueRadians() / (Real)2.0)));
+         float viewportHeight = camera.getHeight();
         
-        //camera.
-       // float tanFovY = Gegenkathete/Ankathete = W/2  / D
-        
-        float viewportHeight = Math.abs(camera.getViewPortBottom()-camera.getViewPortTop());
-        
-        float FOVy = (float)Math.PI/4.0f;
-        
-        float k = (float)(viewportHeight / (2.0f * Math.tan(FOVy/2)) / 2.0f);
-        
+        float k = camera.getFrustumNear()/(2.0f*camera.getFrustumTop())*viewportHeight;
+
         Vector3f camPos = camera.getLocation();
-        
         float d = camPos.distance(getModelBound().getCenter().mult(shared.scale));
-        if (d < 1) {
-            d = 1;
+        if (d < 1.0)
+        {
+            d = 1.0f;
         }
-
+        
+        
         float screenSpaceError = error / d * k;
 
         if (screenSpaceError <= shared.maxScreenSpaceError / shared.scale) {
@@ -287,7 +289,7 @@ public class Chunk extends Geometry {
         } else {
             setChunkVisible(false, false);
 
-            if (children != null) // renderOp.vertexData &&   ??
+            if (children != null)
             {
                 for (int i = 0; i < children.length; i++) {
                     children[i].frameStarted(camera);
@@ -298,35 +300,37 @@ public class Chunk extends Geometry {
             }
         }
     }
-    
-    
-     private void setChunkVisible(boolean visible, boolean applyToChildren)
-        {
-            if (invisible)
-            {
-                return;
+
+    private void setChunkVisible(boolean visible, boolean applyToChildren) {
+        if (invisible) {
+            return;
+        }
+        if (shared.volumeVisible) {
+            if (visible) {
+                node.attachChild(this);
+            } else {
+                node.detachChild(this);
             }
-            if (shared.volumeVisible)
-            {
-                if(visible)
-                    node.attachChild(this);
-                else
-                    node.detachChild(this);
-                //this.visible = visible;
-            }
-           /* if (octree != null) Debug Octree
-            {
-                octree.setVisible(shared.octreeVisible && visible);
-            }*/
-          /*  if (dualGrid != null)  Debug DualGrid
-            {
-                dualGrid.setVisible(shared.dualGridVisible && visible);
-            }*/
-            if (applyToChildren && children != null)
-            {
-                 for (int i = 0; i < children.length; i++) {
-                    children[i].setChunkVisible(visible,applyToChildren);
-                }
+            //this.visible = visible;
+        }
+        /* if (octree != null) Debug Octree
+         {
+         octree.setVisible(shared.octreeVisible && visible);
+         }*/
+        /*  if (dualGrid != null)  Debug DualGrid
+         {
+         dualGrid.setVisible(shared.dualGridVisible && visible);
+         }*/
+        if (applyToChildren && children != null) {
+            for (int i = 0; i < children.length; i++) {
+                children[i].setChunkVisible(visible, applyToChildren);
             }
         }
+    }
+    
+    
+    public static void closeExecutorThread()
+    {
+        executor.shutdown();
+    }
 }
