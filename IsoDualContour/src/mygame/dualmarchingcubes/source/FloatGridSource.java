@@ -4,6 +4,7 @@
  */
 package mygame.dualmarchingcubes.source;
 
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import mygame.dualmarchingcubes.VolumeSource;
 
@@ -130,22 +131,25 @@ public class FloatGridSource implements VolumeSource{
         }
         
      
-    public float getValue(Vector3f position)
+    public float getValue(float posX, float posY, float posZ)
     {
-        Vector3f scaledPosition = new Vector3f(position.x * scale.x, position.y * scale.y, position.z * scale.z);
+        float scaledPosX = posX * scale.x;
+        float scaledPosY = posY * scale.y; 
+        float scaledPosZ = posZ * scale.z;
+        
         float value;
         if (trilinearValue)
         {
-            int x0 = (int)scaledPosition.x;
-            int x1 = (int)Math.ceil(scaledPosition.x);
-            int y0 = (int)scaledPosition.y;
-            int y1 = (int)Math.ceil(scaledPosition.y);
-            int z0 = (int)scaledPosition.z;
-            int z1 = (int)Math.ceil(scaledPosition.z);
+            int x0 = (int)scaledPosX;
+            int x1 = (int)FastMath.ceil(scaledPosX);
+            int y0 = (int)scaledPosY;
+            int y1 = (int)FastMath.ceil(scaledPosY);
+            int z0 = (int)scaledPosZ;
+            int z1 = (int)FastMath.ceil(scaledPosZ);
 
-            float dX = scaledPosition.x - x0;
-            float dY = scaledPosition.y - y0;
-            float dZ = scaledPosition.z - z0;
+            float dX = scaledPosX - x0;
+            float dY = scaledPosY - y0;
+            float dZ = scaledPosZ - z0;
 
             float f000 = getVolumeGridValue(x0, y0, z0);
             float f100 = getVolumeGridValue(x1, y0, z0);
@@ -175,16 +179,16 @@ public class FloatGridSource implements VolumeSource{
         else
         {
             // Nearest neighbour else
-            int x = (int)(scaledPosition.x + 0.5);
-            int y = (int)(scaledPosition.y + 0.5);
-            int z = (int)(scaledPosition.z + 0.5);
+            int x = (int)(scaledPosX + 0.5);
+            int y = (int)(scaledPosY + 0.5);
+            int z = (int)(scaledPosZ + 0.5);
             value = getVolumeGridValue(x, y, z);
         }
         return value;
     }
 
-    public float getValue(float x, float y, float z) {
-        return getValue(new Vector3f(x,y,z));
+    public float getValue(Vector3f pos) {
+        return getValue(pos.x,pos.y,pos.z);
     }
 
     public Vector3f getGradient(Vector3f pos) {
