@@ -31,8 +31,14 @@ public class ChunkAppState extends AbstractAppState {
 
     @Override
     public void update(float tpf) {
-        
-        rootChunk.frameStarted(camera);
-        
+       
+        rootChunk.waitForGeometry();
+       // rootChunk.frameStarted(camera);
+        rootChunk.frameStarted(null);
+    }
+    
+    public void cleanup() {
+        super.cleanup();
+        Chunk.closeExecutorThread();
     }
 }
