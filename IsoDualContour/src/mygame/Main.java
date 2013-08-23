@@ -106,13 +106,15 @@ public class Main extends SimpleApplication {
          
          inputManager.addMapping("Shoot",
             new MouseButtonTrigger(MouseInput.BUTTON_LEFT)); 
-         inputManager.addListener(actionListener, "Shoot");
+         inputManager.addMapping("Remove",
+            new MouseButtonTrigger(MouseInput.BUTTON_RIGHT)); 
+         inputManager.addListener(actionListener, "Shoot", "Remove");
     }
 
     private ActionListener actionListener = new ActionListener() {
  
     public void onAction(String name, boolean keyPressed, float tpf) {
-      if (name.equals("Shoot") && !keyPressed) {
+      if ((name.equals("Shoot") || name.equals("Remove") )&& !keyPressed) {
         Ray ray = new Ray(cam.getLocation(), cam.getDirection());
         
         
@@ -126,7 +128,11 @@ public class Main extends SimpleApplication {
             
             float radius=5;
             
-            source.addSphere(v3f, radius);
+            if(name.equals("Shoot"))
+                source.addSphere(v3f, radius,true);
+            
+            if(name.equals("Remove"))
+                source.addSphere(v3f, radius,false);
             
             parameter.updateFrom = v3f.subtract(radius * 2.0f,radius * 2.0f,radius * 2.0f);
             parameter.updateTo = v3f.add(radius * 2.0f,radius * 2.0f,radius * 2.0f);
