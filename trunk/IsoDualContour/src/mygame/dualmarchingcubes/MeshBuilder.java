@@ -9,6 +9,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.util.BufferUtils;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,11 +57,30 @@ public class MeshBuilder {
         mesh.setBuffer(VertexBuffer.Type.Normal, 3, BufferUtils.createFloatBuffer(verticesNormal.toArray(new Vector3f[0])));
         // mesh.setBuffer(VertexBuffer.Type.TexCoord, 2, BufferUtils.createFloatBuffer(texcoords.toArray(new Vector2f[0])));
 
-        mesh.setBuffer(VertexBuffer.Type.Index, 3, BufferUtils.createIntBuffer(toIntArray(indices)));
+       // mesh.setBuffer(VertexBuffer.Type.Index, 3, BufferUtils.createIntBuffer(toIntArray(indices)));
+        mesh.setBuffer(VertexBuffer.Type.Index, 3, listToBuffer(indices));
 
         mesh.updateBound();
+        
+        //Clear All
+        indexMap = new HashMap();
+        verticesPosition = new LinkedList();
+        verticesNormal = new LinkedList();
+        indices = new LinkedList();
+        
 
         return mesh;
+    }
+    
+    public IntBuffer listToBuffer(List<Integer> list)
+    {
+        IntBuffer buff = BufferUtils.createIntBuffer(list.size());
+        buff.clear();
+        for (Integer e : list) {
+            buff.put(e.intValue());
+        }
+        buff.flip();
+        return buff;
     }
 
     int[] toIntArray(List<Integer> list) {
