@@ -11,7 +11,7 @@ import mygame.dualmarchingcubes.VolumeSource;
  *
  * @author Karsten
  */
-public class SphereSource  implements VolumeSource {
+public class SphereSource extends VolumeSource {
 
     private Vector3f center = new Vector3f(50,50,50);
     private float size=45;

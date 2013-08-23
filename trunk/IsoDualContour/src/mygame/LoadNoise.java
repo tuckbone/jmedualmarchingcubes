@@ -38,11 +38,11 @@ public class LoadNoise {
             for (int z = 0; z < row.length; z++) {
                 int blockHeight = (int)newGrid[x][z];
                 
-                for (int y = 0; y < blockHeight-2; y++) {
-               // for (int y = 0; y < 32; y++) {
+               // for (int y = 0; y < blockHeight-2; y++) {
+                for (int y = 0; y < sizeY; y++) {
                     
-                  //  source.setVolumeGridValue(locX + x, locY + y, locZ + z, (blockHeight-y));
-                    
+                    source.setVolumeGridValue(locX + x, locY + y, locZ + z, ((float)blockHeight - (float)y));
+                    /*
                     source.setVolumeGridValue(locX + x, locY + y, locZ + z, (short)1);
                     
                     
@@ -50,7 +50,7 @@ public class LoadNoise {
                     {
                         float rest=newGrid[x][z]-(float)blockHeight;
                         source.setVolumeGridValue(locX + x, locY + y, locZ + z, (short)rest);
-                    }
+                    }*/
                 }
                 
             }

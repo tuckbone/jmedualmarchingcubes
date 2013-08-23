@@ -8,16 +8,23 @@ import mygame.dualmarchingcubes.VolumeSource;
 import mygame.dualmarchingcubes.OctreeNodeSplitPolicy;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.VideoRecorderAppState;
+import com.jme3.font.BitmapText;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 import mygame.dualmarchingcubes.Chunk;
@@ -32,6 +39,13 @@ public class Main extends SimpleApplication {
 
     private Geometry geom;
     private FloatGridSource source;
+    
+    private Geometry mark;
+    
+    private ChunkParameters parameter;
+    private Chunk chunk ;
+    
+    private Node terrainNode = new Node();
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -41,10 +55,14 @@ public class Main extends SimpleApplication {
     
     @Override
     public void simpleInitApp() {
-        //source = new FloatGridSource(new Vector3f(1f, 1f, 1f), 256, 128, 256, 0);
-      //  LoadNoise.loadNoise(0, 0, 0, 256, 128, 256, 1f, (FloatGridSource)source);
+        source = new FloatGridSource(new Vector3f(1f, 1f, 1f), 256, 128, 256, 0);
+        LoadNoise.loadNoise(0, 0, 0, 256, 128, 256, 1f, (FloatGridSource)source);
 
-        source = SourceGenerator.getSource(new GoursatSurface(), 5);
+      //  source = SourceGenerator.getSource(new GoursatSurface(), 5);
+        
+        
+        
+        rootNode.attachChild(terrainNode);
         
         //Mesh mesh = new Mesh();
        // System.out.println(mesh.getTriangleCount());
@@ -52,9 +70,9 @@ public class Main extends SimpleApplication {
        // return;
         /*
          * Stuff not working yet
-         * */
+         * */        
         
-         ChunkParameters parameter = new ChunkParameters();
+         parameter = new ChunkParameters();
          
          parameter.baseError=1.8f;
          parameter.createGeometryFromLevel = 3;
@@ -67,8 +85,8 @@ public class Main extends SimpleApplication {
          parameter.source = source;
          parameter.material = getMaterial();
          
-         Chunk chunk = new Chunk();
-         chunk.load(rootNode, Vector3f.ZERO, new Vector3f(source.getWidth(),source.getHeight(),source.getDepth()), 5, parameter);
+         chunk = new Chunk();
+         chunk.load(terrainNode, Vector3f.ZERO, new Vector3f(source.getWidth(),source.getHeight(),source.getDepth()), 5, parameter);
          stateManager.attach(new ChunkAppState(chunk));
 
          /*
@@ -80,10 +98,65 @@ public class Main extends SimpleApplication {
         dualMarchingCubes();
          */
 
+        // stateManager.attach(new VideoRecorderAppState());
         
          makeLight();
+         initMark();
+         initCrossHairs();
+         
+         inputManager.addMapping("Shoot",
+            new MouseButtonTrigger(MouseInput.BUTTON_LEFT)); 
+         inputManager.addListener(actionListener, "Shoot");
     }
 
+    private ActionListener actionListener = new ActionListener() {
+ 
+    public void onAction(String name, boolean keyPressed, float tpf) {
+      if (name.equals("Shoot") && !keyPressed) {
+        Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+        
+        
+        
+        Vector3f v3f = source.getFirstRayIntersection(ray, 1, 5000, 1000);
+        if(v3f != null)
+        {
+            System.out.println("HIT!");
+            mark.setLocalTranslation(v3f);
+            rootNode.attachChild(mark);
+            
+            float radius=5;
+            
+            source.addSphere(v3f, radius);
+            
+            parameter.updateFrom = v3f.subtract(radius * 2.0f,radius * 2.0f,radius * 2.0f);
+            parameter.updateTo = v3f.add(radius * 2.0f,radius * 2.0f,radius * 2.0f);
+            chunk.load(terrainNode, Vector3f.ZERO, new Vector3f(source.getWidth(),source.getHeight(),source.getDepth()), 5, parameter);
+
+            
+        }else{
+            System.out.println("NO HIT!");
+            rootNode.detachChild(mark);
+        }
+      }
+    }};
+    
+      protected void initMark() {
+        Sphere sphere = new Sphere(30, 30, 0.2f);
+        mark = new Geometry("BOOM!", sphere);
+        Material mark_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mark_mat.setColor("Color", ColorRGBA.Red);
+        mark.setMaterial(mark_mat);
+    }
+      
+     protected void initCrossHairs() {
+        BitmapText ch = new BitmapText(guiFont, false);
+        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
+        ch.setText("+"); // crosshairs
+        ch.setLocalTranslation( // center
+                settings.getWidth() / 2 - guiFont.getCharSet().getRenderedSize() / 3 * 2,
+                settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
+        guiNode.attachChild(ch);
+     }
 
     public void dualMarchingCubes() {
         //Dual Marching Cubes
@@ -146,7 +219,7 @@ public class Main extends SimpleApplication {
 
         flyCam.setMoveSpeed(50);
         
-        flyCam.setDragToRotate(true);
+       // flyCam.setDragToRotate(true);
 
         //for a nicer look ;)
         rootNode.attachChild(SkyFactory.createSky(
