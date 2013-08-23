@@ -218,7 +218,7 @@ public class FloatGridSource extends VolumeSource{
     }
     
 
-   public void addSphere(Vector3f center, float radius)
+   public void addSphere(Vector3f center, float radius, boolean add)
     {
         float worldWidthScale = 1.0f / scale.x;
         float worldHeightScale = 1.0f / scale.y;
@@ -256,10 +256,19 @@ public class FloatGridSource extends VolumeSource{
                     float b = (center.y-pos.y);
                     float c = (center.z-pos.z);*/
                     
-                    float otherValue = radiusSqrt - pos.distance(scaledCenter);//;a*a+b*b+c*c;
+                    
+                    if(add)
+                    {
+                        float otherValue= radiusSqrt - pos.distance(scaledCenter);//;a*a+b*b+c*c;
+                        value = Math.max(getValue(pos), otherValue);
+                    }else{
+                       float otherValue= pos.distance(scaledCenter)-radiusSqrt;//;a*a+b*b+c*c;
+                       value = Math.min(getValue(pos), otherValue); 
+                    }
+                    
                     // float otherValue = radius - pos.distance(scaledCenter)-1f;
                     
-                    value = Math.max(getValue(pos), otherValue);
+                    
                     setVolumeGridValue(x, y, z, value);
                 }
             }
