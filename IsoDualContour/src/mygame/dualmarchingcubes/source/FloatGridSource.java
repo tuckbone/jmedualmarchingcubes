@@ -108,19 +108,36 @@ public class FloatGridSource extends VolumeSource{
             if (sobelGradient)
             {
                 // Calculate gradient like in the original MC paper but mix a bit of Sobel in
-                Vector3f rfNormal = new Vector3f(
-                (getVolumeGridValue(x + 1, y - 1, z) - getVolumeGridValue(x - 1, y - 1, z))
-                        + 2.0f * (getVolumeGridValue(x + 1, y, z) - getVolumeGridValue(x - 1, y, z))
-                        + (getVolumeGridValue(x + 1, y + 1, z) - getVolumeGridValue(x - 1, y + 1, z)),
-                (getVolumeGridValue(x, y + 1, z - 1) - getVolumeGridValue(x, y - 1, z - 1))
-                    + 2.0f * (getVolumeGridValue(x, y + 1, z) - getVolumeGridValue(x, y - 1, z))
-                    + (getVolumeGridValue(x, y + 1, z + 1) - getVolumeGridValue(x, y - 1, z + 1)),
-                (getVolumeGridValue(x - 1, y, z + 1) - getVolumeGridValue(x - 1, y, z - 1))
-                    + 2.0f * (getVolumeGridValue(x, y, z + 1) - getVolumeGridValue(x, y, z - 1))
-                    + (getVolumeGridValue(x + 1, y, z + 1) - getVolumeGridValue(x + 1, y, z - 1)));
-                rfNormal.multLocal(-1f);
-                rfNormal.normalizeLocal();
-                return rfNormal;
+                if(x+1 >= width || x-1 < 0 || y+1 >= height || y-1 < 0 || z+1 >= depth || z-1 < 0)
+                {
+                    Vector3f rfNormal = new Vector3f(
+                    (getVolumeGridValue(x + 1, y - 1, z) - getVolumeGridValue(x - 1, y - 1, z))
+                            + 2.0f * (getVolumeGridValue(x + 1, y, z) - getVolumeGridValue(x - 1, y, z))
+                            + (getVolumeGridValue(x + 1, y + 1, z) - getVolumeGridValue(x - 1, y + 1, z)),
+                    (getVolumeGridValue(x, y + 1, z - 1) - getVolumeGridValue(x, y - 1, z - 1))
+                        + 2.0f * (getVolumeGridValue(x, y + 1, z) - getVolumeGridValue(x, y - 1, z))
+                        + (getVolumeGridValue(x, y + 1, z + 1) - getVolumeGridValue(x, y - 1, z + 1)),
+                    (getVolumeGridValue(x - 1, y, z + 1) - getVolumeGridValue(x - 1, y, z - 1))
+                        + 2.0f * (getVolumeGridValue(x, y, z + 1) - getVolumeGridValue(x, y, z - 1))
+                        + (getVolumeGridValue(x + 1, y, z + 1) - getVolumeGridValue(x + 1, y, z - 1)));
+                    rfNormal.multLocal(-1f);
+                   // rfNormal.normalizeLocal();
+                    return rfNormal;
+                }else{
+                     Vector3f rfNormal = new Vector3f(
+                    (data[x + 1][ y - 1][ z] - data[x - 1][ y - 1][ z])
+                            + 2.0f * (data[x + 1][ y][ z] - data[x - 1][ y][ z])
+                            + (data[x + 1][ y + 1][ z] - data[x - 1][ y + 1][ z]),
+                    (data[x][ y + 1][ z - 1] - data[x][ y - 1][ z - 1])
+                        + 2.0f * (data[x][ y + 1][ z] - data[x][ y - 1][ z])
+                        + (data[x][ y + 1][ z + 1] - data[x][ y - 1][ z + 1]),
+                    (data[x - 1][ y][ z + 1] - data[x - 1][ y][ z - 1])
+                        + 2.0f * (data[x][ y][ z + 1] - data[x][ y][ z - 1])
+                        + (data[x + 1][ y][ z + 1] - data[x + 1][ y][ z - 1]));
+                    rfNormal.multLocal(-1f);
+                   // rfNormal.normalizeLocal();
+                    return rfNormal;   
+                }
             }
             // Calculate gradient like in the original MC paper
             
@@ -130,14 +147,14 @@ public class FloatGridSource extends VolumeSource{
                 getVolumeGridValue(x - 1, y, z) - getVolumeGridValue(x + 1, y, z),
                 getVolumeGridValue(x, y - 1, z) - getVolumeGridValue(x, y + 1, z),
                 getVolumeGridValue(x, y, z - 1) - getVolumeGridValue(x, y, z + 1));
-                rfNormal.normalizeLocal();
+                //rfNormal.normalizeLocal();
                 return rfNormal;
             }else{
                 Vector3f rfNormal = new Vector3f(
                         data[x-1][y][z]-data[x+1][y][z],
                         data[x][y-1][z]-data[x][y+1][z],
                         data[x][y][z-1]-data[x][y][z+1]);
-                rfNormal.normalizeLocal();
+                //rfNormal.normalizeLocal();
                 return rfNormal;   
             }
         }
