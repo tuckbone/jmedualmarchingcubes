@@ -40,4 +40,8 @@ import com.jme3.math.Vector3f;
         public Vector3f updateTo;
         
         public Material material;
+        
+        public float updateRadius;
+        
+        public Vector3f  updateCenter;
     }

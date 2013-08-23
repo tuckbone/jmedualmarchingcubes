@@ -33,8 +33,9 @@ public class MeshBuilder {
 
     public void addVertex(Vector3f position, Vector3f normal) {
         int i = 0;
+        Integer index = indexMap.get(position);
 
-        if (indexMap.containsKey(position) == false) {
+        if (index == null) {
             i = verticesPosition.size();
             indexMap.put(position, i);
             verticesPosition.add(position);
@@ -42,7 +43,7 @@ public class MeshBuilder {
 
             // Update bounding box
         } else {
-            i = indexMap.get(position);
+            i = index;
         }
 
         indices.add(i);

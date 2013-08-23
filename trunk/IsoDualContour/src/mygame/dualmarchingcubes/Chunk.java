@@ -37,12 +37,16 @@ public class Chunk extends Geometry {
 
     public void load(Node parent, Vector3f from, Vector3f to, int level, ChunkParameters parameter) {
         isRoot = true;
-
         // Don't recreate the shared parameters on update.
         if (parameter.updateFrom.equals(Vector3f.ZERO) && parameter.updateTo.equals(Vector3f.ZERO)) {
             shared = new ChunkTreeSharedData();
             shared.maxScreenSpaceError = parameter.maxScreenSpaceError;
             shared.scale = parameter.scale;
+            
+            
+        }else{
+            parameter.updateRadius = parameter.updateFrom.distance(parameter.updateTo)/2;
+            parameter.updateCenter =  parameter.updateFrom.add((parameter.updateTo.subtract(parameter.updateFrom)).divide(2));
         }
 
         doLoad(parent, from, to, from, to, level, level, parameter);
@@ -55,20 +59,21 @@ public class Chunk extends Geometry {
             // Early out if an update of a part of the tree volume is going on and this chunk is outside of the area.
             // Free memory from old mesh version
             
-            
             float radius = from.distance(to)/2;
-            Vector3f center = from.add((to.subtract(from)).divide(2));
+                        Vector3f center = new Vector3f(from.x + (to.x-from.x)/2,
+                                        from.y + (to.y-from.y)/2,
+                                        from.z + (to.z-from.z)/2);
             
-            float updateRadius = parameter.updateFrom.distance(parameter.updateTo)/2;
-            Vector3f updateCenter =  parameter.updateFrom.add((parameter.updateTo.subtract(parameter.updateFrom)).divide(2));
             
-            if(center.distance(updateCenter) > radius + updateRadius)
+            if(center.distance(parameter.updateCenter) > radius + parameter.updateRadius)
             {
                 return;
             }
+        }else{
+            setMaterial(parameter.material);
         }
 
-        setMaterial(parameter.material);
+        
         if(mesh == null)
             mesh = new Mesh();
         node = parent;
@@ -119,12 +124,12 @@ public class Chunk extends Geometry {
             int level, int maxLevels, ChunkParameters parameter) {
         // Now recursively create the more detailed children
         if (level > 2) {
-            Vector3f newCenter = new Vector3f();
+          /*  Vector3f newCenter = new Vector3f();
             Vector3f xWidth = new Vector3f();
             Vector3f yWidth = new Vector3f();
-            Vector3f zWidth = new Vector3f();
+            Vector3f zWidth = new Vector3f();*/
 
-            OctreeNode.getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
+            //OctreeNode.getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
             if (children == null) {
 
                 children = new Chunk[8];
@@ -133,15 +138,37 @@ public class Chunk extends Geometry {
                     children[i].shared = shared;
                 }
             }
+            
+            float x  = (to.x - from.x) / 2.0f;
+            float y = (to.y - from.y) / 2.0f;
+            float z  = (to.z - from.z) / 2.0f;
+            Vector3f newCenter = new Vector3f(x,y,z);
+            newCenter.addLocal(from);
+            
+           // Vector3f xWidth = new Vector3f();
+           // Vector3f yWidth = new Vector3f();
+           // Vector3f zWidth = new Vector3f();
 
-            children[0].doLoad(parent, from, newCenter, totalFrom, totalTo, level - 1, maxLevels, parameter);
+            //getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
+            
+            children[0].doLoad(parent,from, newCenter, totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[1].doLoad(parent,new Vector3f(from.x+x,from.y,from.z), new Vector3f(newCenter.x+x,newCenter.y,newCenter.z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[2].doLoad(parent,new Vector3f(from.x+x,from.y,from.z+z), new Vector3f(newCenter.x+x,newCenter.y,newCenter.z+z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[3].doLoad(parent,new Vector3f(from.x,from.y,from.z+z), new Vector3f(newCenter.x,newCenter.y,newCenter.z+z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[4].doLoad(parent,new Vector3f(from.x,from.y+y,from.z), new Vector3f(newCenter.x,newCenter.y+y,newCenter.z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[5].doLoad(parent,new Vector3f(from.x+x,from.y+y,from.z), new Vector3f(newCenter.x+x,newCenter.y+y,newCenter.z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[6].doLoad(parent,new Vector3f(from.x+x,from.y+y,from.z+z), new Vector3f(newCenter.x+x,newCenter.y+y,newCenter.z+z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[7].doLoad(parent,new Vector3f(from.x,from.y+y,from.z+z), new Vector3f(newCenter.x,newCenter.y+y,newCenter.z+z), totalFrom, totalTo, level - 1, maxLevels, parameter);
+
+            /*children[0].doLoad(parent, from, newCenter, totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[1].doLoad(parent, from.add(xWidth), newCenter.add(xWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[2].doLoad(parent, from.add(xWidth).add(zWidth), newCenter.add(xWidth).add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[3].doLoad(parent, from.add(zWidth), newCenter.add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[4].doLoad(parent, from.add(yWidth), newCenter.add(yWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[5].doLoad(parent, from.add(yWidth.add(xWidth)), newCenter.add(yWidth).add(xWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[6].doLoad(parent, from.add(yWidth).add(xWidth).add(zWidth), newCenter.add(yWidth).add(xWidth).add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
-            children[7].doLoad(parent, from.add(yWidth).add(zWidth), newCenter.add(yWidth).add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);
+            children[7].doLoad(parent, from.add(yWidth).add(zWidth), newCenter.add(yWidth).add(zWidth), totalFrom, totalTo, level - 1, maxLevels, parameter);*/
+            
         }// Just load one child of the same size as the parent for the leafes because they actually don't need to be subdivided as they
         // are all rendered anywa
         else if (level > 1) {
@@ -193,6 +220,8 @@ public class Chunk extends Geometry {
         // boolean octreeVisible;
         /// Another visibility flag to be user setable.
         boolean volumeVisible=true;
+        
+
     }
 
     private class ChunkRequest implements Runnable {
