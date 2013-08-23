@@ -22,10 +22,14 @@ public class OctreeNode {
     private Vector3f centerGradient;
     private float centerValue;
     private static float NEAR_FACTOR=2.0f;
+    
+    private Vector3f center;
 
     public OctreeNode(Vector3f from, Vector3f to) {
         this.from = from;
         this.to = to;
+        this.center = (from.add(to)).divide(2);
+        
         centerGradient = Vector3f.ZERO;
         centerValue = 0;
     }
@@ -34,21 +38,37 @@ public class OctreeNode {
         if (splitPolicy.doSplit(this, geometricError)) {
             children = new OctreeNode[8];
 
-            Vector3f newCenter = new Vector3f();
-            Vector3f xWidth = new Vector3f();
-            Vector3f yWidth = new Vector3f();
-            Vector3f zWidth = new Vector3f();
+            
+            
+            float x  = (to.x - from.x) / 2.0f;
+            float y = (to.y - from.y) / 2.0f;
+            float z  = (to.z - from.z) / 2.0f;
+            Vector3f newCenter = new Vector3f(x,y,z);
+            newCenter.addLocal(from);
+            
+           // Vector3f xWidth = new Vector3f();
+           // Vector3f yWidth = new Vector3f();
+           // Vector3f zWidth = new Vector3f();
 
-            getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
-
+            //getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
+            
             children[0] = new OctreeNode(from, newCenter);
-            children[1] = new OctreeNode(from.add(xWidth), newCenter.add(xWidth));
+            children[1] = new OctreeNode(new Vector3f(from.x+x,from.y,from.z), new Vector3f(newCenter.x+x,newCenter.y,newCenter.z));
+            children[2] = new OctreeNode(new Vector3f(from.x+x,from.y,from.z+z), new Vector3f(newCenter.x+x,newCenter.y,newCenter.z+z));
+            children[3] = new OctreeNode(new Vector3f(from.x,from.y,from.z+z), new Vector3f(newCenter.x,newCenter.y,newCenter.z+z));
+            children[4] = new OctreeNode(new Vector3f(from.x,from.y+y,from.z), new Vector3f(newCenter.x,newCenter.y+y,newCenter.z));
+            children[5] = new OctreeNode(new Vector3f(from.x+x,from.y+y,from.z), new Vector3f(newCenter.x+x,newCenter.y+y,newCenter.z));
+            children[6] = new OctreeNode(new Vector3f(from.x+x,from.y+y,from.z+z), new Vector3f(newCenter.x+x,newCenter.y+y,newCenter.z+z));
+            children[7] = new OctreeNode(new Vector3f(from.x,from.y+y,from.z+z), new Vector3f(newCenter.x,newCenter.y+y,newCenter.z+z));
+
+            
+           /* children[1] = new OctreeNode(from.add(xWidth), newCenter.add(xWidth));
             children[2] = new OctreeNode(from.add(xWidth).add(zWidth), newCenter.add(xWidth).add(zWidth));
             children[3] = new OctreeNode(from.add(zWidth), newCenter.add(zWidth));
             children[4] = new OctreeNode(from.add(yWidth), newCenter.add(yWidth));
             children[5] = new OctreeNode(from.add(yWidth).add(xWidth), newCenter.add(yWidth).add(xWidth));
             children[6] = new OctreeNode(from.add(yWidth).add(xWidth).add(zWidth), newCenter.add(yWidth).add(xWidth).add(zWidth));
-            children[7] = new OctreeNode(from.add(yWidth).add(zWidth), newCenter.add(yWidth).add(zWidth));
+            children[7] = new OctreeNode(from.add(yWidth).add(zWidth), newCenter.add(yWidth).add(zWidth));*/
 
             for (int i = 0; i < 8; i++) {
                 children[i].split(splitPolicy, source, geometricError);
@@ -126,7 +146,7 @@ public class OctreeNode {
     }
 
     public Vector3f getCenter() {
-        return (from.add(to)).divide(2);
+        return center;
     }
 
     public void setCenterValue(float value) {

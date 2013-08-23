@@ -84,6 +84,7 @@ public class Main extends SimpleApplication {
          parameter.updateTo = Vector3f.ZERO;
          parameter.source = source;
          parameter.material = getMaterial();
+         parameter.updateRadius = -1;
          
          chunk = new Chunk();
          chunk.load(terrainNode, Vector3f.ZERO, new Vector3f(source.getWidth(),source.getHeight(),source.getDepth()), 5, parameter);

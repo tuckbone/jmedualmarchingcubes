@@ -24,7 +24,7 @@ public class FloatGridSource extends VolumeSource{
     private float maxClampedAbsoluteDensity = 5;
     private boolean trilinearValue = true;
    // private boolean trilinearGradient = false;
-    private boolean sobelGradient = true;
+    private boolean sobelGradient = false;
     /// The texture width.
     private int width;
     /// The texture height.
@@ -70,20 +70,20 @@ public class FloatGridSource extends VolumeSource{
     }
 
     public float getVolumeGridValue(int x, int y, int z) {
-        if (x >= getWidth()) {
-            x = getWidth() - 1;
+        if (x >= width) {
+            x = width - 1;
         } else if (x < 0) {
             x = 0;
         }
 
-        if (y >= getHeight()) {
-            y = getHeight() - 1;
+        if (y >= height) {
+            y = height - 1;
         } else if (y < 0) {
             y = 0;
         }
 
-        if (z >= getDepth()) {
-            z = getDepth() - 1;
+        if (z >= depth) {
+            z = depth - 1;
         } else if (z < 0) {
             z = 0;
         }
@@ -123,14 +123,32 @@ public class FloatGridSource extends VolumeSource{
                 return rfNormal;
             }
             // Calculate gradient like in the original MC paper
-            Vector3f rfNormal = new Vector3f(
+            
+            if(x+1 >= width || x-1 < 0 || y+1 >= height || y-1 < 0 || z+1 >= depth || z-1 < 0)
+            {
+                Vector3f rfNormal = new Vector3f(
                 getVolumeGridValue(x - 1, y, z) - getVolumeGridValue(x + 1, y, z),
                 getVolumeGridValue(x, y - 1, z) - getVolumeGridValue(x, y + 1, z),
                 getVolumeGridValue(x, y, z - 1) - getVolumeGridValue(x, y, z + 1));
-            rfNormal.normalizeLocal();
-            return rfNormal;
+                rfNormal.normalizeLocal();
+                return rfNormal;
+            }else{
+                Vector3f rfNormal = new Vector3f(
+                        data[x-1][y][z]-data[x+1][y][z],
+                        data[x][y-1][z]-data[x][y+1][z],
+                        data[x][y][z-1]-data[x][y][z+1]);
+                rfNormal.normalizeLocal();
+                return rfNormal;   
+            }
         }
         
+    
+    private static final int    BIG_ENOUGH_INT   = 16 * 1024;
+    private static final double BIG_ENOUGH_FLOOR = BIG_ENOUGH_INT;
+    
+    private static int fastCeil(float x) {
+       return BIG_ENOUGH_INT - (int)(BIG_ENOUGH_FLOOR-x); // credit: roquen
+   }
      
     public float getValue(float posX, float posY, float posZ)
     {
@@ -142,24 +160,39 @@ public class FloatGridSource extends VolumeSource{
         if (trilinearValue)
         {
             int x0 = (int)scaledPosX;
-            int x1 = (int)FastMath.ceil(scaledPosX);
+            int x1 = (int)fastCeil(scaledPosX);
             int y0 = (int)scaledPosY;
-            int y1 = (int)FastMath.ceil(scaledPosY);
+            int y1 = (int)fastCeil(scaledPosY);
             int z0 = (int)scaledPosZ;
-            int z1 = (int)FastMath.ceil(scaledPosZ);
+            int z1 = (int)fastCeil(scaledPosZ);
 
             float dX = scaledPosX - x0;
             float dY = scaledPosY - y0;
             float dZ = scaledPosZ - z0;
+            
 
-            float f000 = getVolumeGridValue(x0, y0, z0);
-            float f100 = getVolumeGridValue(x1, y0, z0);
-            float f010 = getVolumeGridValue(x0, y1, z0);
-            float f001 = getVolumeGridValue(x0, y0, z1);
-            float f101 = getVolumeGridValue(x1, y0, z1);
-            float f011 = getVolumeGridValue(x0, y1, z1);
-            float f110 = getVolumeGridValue(x1, y1, z0);
-            float f111 = getVolumeGridValue(x1, y1, z1);
+            float f000,f100,f010,f001,f101,f011,f110,f111;
+            
+            if(x1 >= width || x0 < 0 || y1 >= height || y0 < 0 || z1 >= depth || z0 < 0)
+            {
+                f000 = getVolumeGridValue(x0, y0, z0);
+                f100 = getVolumeGridValue(x1, y0, z0);
+                f010 = getVolumeGridValue(x0, y1, z0);
+                f001 = getVolumeGridValue(x0, y0, z1);
+                f101 = getVolumeGridValue(x1, y0, z1);
+                f011 = getVolumeGridValue(x0, y1, z1);
+                f110 = getVolumeGridValue(x1, y1, z0);
+                f111 = getVolumeGridValue(x1, y1, z1);
+            }else{
+                f000 = data[x0][y0][z0];
+                f100 = data[x1][y0][z0];
+                f010 = data[x0][y1][z0];
+                f001 = data[x0][y0][z1];
+                f101 = data[x1][y0][z1];
+                f011 = data[x0][y1][z1];
+                f110 = data[x1][y1][z0];
+                f111 = data[x1][y1][z1];  
+            }
 
             float oneMinX = 1.0f - dX;
             float oneMinY = 1.0f - dY;
