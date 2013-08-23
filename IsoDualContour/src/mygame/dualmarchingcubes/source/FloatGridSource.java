@@ -5,6 +5,7 @@
 package mygame.dualmarchingcubes.source;
 
 import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import mygame.dualmarchingcubes.VolumeSource;
 
@@ -12,7 +13,7 @@ import mygame.dualmarchingcubes.VolumeSource;
  *
  * @author Karsten
  */
-public class FloatGridSource implements VolumeSource{
+public class FloatGridSource extends VolumeSource{
 
     /// The raw volume data.
     private float data[][][];
@@ -217,5 +218,57 @@ public class FloatGridSource implements VolumeSource{
     }
     
 
+   public void addSphere(Vector3f center, float radius)
+    {
+        float worldWidthScale = 1.0f / scale.x;
+        float worldHeightScale = 1.0f / scale.y;
+        float  worldDepthScale = 1.0f / scale.z;
+        
+        
+        float radiusSqrt = (float)(Math.sqrt(radius)+radius)/2;
+
+
+        // No need for trilineaer interpolation here as we iterate over the
+        // cells anyway.
+        boolean oldTrilinearValue = trilinearValue;
+        trilinearValue = false;
+        float value;
+       // int x, y;
+        Vector3f scaledCenter = new Vector3f (center.x * scale.x, center.y * scale.y, center.z * scale.z);
+        int xStart = clamp((int)(scaledCenter.x - radius * scale.x), 0, width);
+        int xEnd = clamp((int)(scaledCenter.x + radius * scale.x), 0, width);
+        int yStart = clamp((int)(scaledCenter.y - radius * scale.y), 0, height);
+        int yEnd = clamp((int)(scaledCenter.y + radius * scale.y), 0, height);
+        int zStart = clamp((int)(scaledCenter.z - radius * scale.z), 0, depth);
+        int zEnd = clamp((int)(scaledCenter.z + radius * scale.z), 0, depth);
+        Vector3f pos = new Vector3f();
+        for (int z = zStart; z < zEnd; ++z)
+        {
+            for (int y = yStart; y < yEnd; ++y)
+            {
+                for (int x = xStart; x < xEnd; ++x)
+                {
+                    pos.x = x * worldWidthScale;
+                    pos.y =  y * worldHeightScale;
+                    pos.z = z * worldDepthScale;
+                    
+                    /*float a = (center.x-pos.x);
+                    float b = (center.y-pos.y);
+                    float c = (center.z-pos.z);*/
+                    
+                    float otherValue = radiusSqrt - pos.distance(scaledCenter);//;a*a+b*b+c*c;
+                    // float otherValue = radius - pos.distance(scaledCenter)-1f;
+                    
+                    value = Math.max(getValue(pos), otherValue);
+                    setVolumeGridValue(x, y, z, value);
+                }
+            }
+        }
+
+        trilinearValue = oldTrilinearValue;
+    }
    
+   private static int clamp(int  value, int  min, int max) {
+    return Math.max(min, Math.min(max, value));
+}
 }

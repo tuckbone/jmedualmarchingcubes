@@ -12,7 +12,7 @@ import mygame.dualmarchingcubes.VolumeSource;
  *
  * @author Karsten
  */
-public class NoiseSource implements VolumeSource {
+public class NoiseSource extends VolumeSource {
     private Noise noise = new Noise();
 
     public float getValue(Vector3f pos) {

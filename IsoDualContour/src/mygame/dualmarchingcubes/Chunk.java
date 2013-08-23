@@ -55,11 +55,22 @@ public class Chunk extends Geometry {
             // Early out if an update of a part of the tree volume is going on and this chunk is outside of the area.
             // Free memory from old mesh version
             
-            //For Updates not filled yet
+            
+            float radius = from.distance(to)/2;
+            Vector3f center = from.add((to.subtract(from)).divide(2));
+            
+            float updateRadius = parameter.updateFrom.distance(parameter.updateTo)/2;
+            Vector3f updateCenter =  parameter.updateFrom.add((parameter.updateTo.subtract(parameter.updateFrom)).divide(2));
+            
+            if(center.distance(updateCenter) > radius + updateRadius)
+            {
+                return;
+            }
         }
 
         setMaterial(parameter.material);
-        mesh = new Mesh();
+        if(mesh == null)
+            mesh = new Mesh();
         node = parent;
         parent.attachChild(this);
         // Set to invisible for now.
@@ -161,12 +172,12 @@ public class Chunk extends Geometry {
 
         // chunkRequest.origin.box = chunkRequest.mb.getBoundingBox();
 
-        if (!invisible) {
+        /*if (!invisible) {
             if (chunkRequest.isUpdate) {
                 node.detachChild(this);
             }
             //node.attachChild(this);
-         }
+         }*/
 
         //node.detachChild(this); //<-------------
 
