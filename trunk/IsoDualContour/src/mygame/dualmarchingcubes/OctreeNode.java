@@ -24,6 +24,8 @@ public class OctreeNode {
     private static float NEAR_FACTOR=2.0f;
     
     private Vector3f center;
+    
+    private boolean subdivided=false;
 
     public OctreeNode(Vector3f from, Vector3f to) {
         this.from = from;
@@ -38,7 +40,7 @@ public class OctreeNode {
         if (splitPolicy.doSplit(this, geometricError)) {
             children = new OctreeNode[8];
 
-            
+            subdivided=true;
             
             float x  = (to.x - from.x) / 2.0f;
             float y = (to.y - from.y) / 2.0f;
@@ -122,7 +124,7 @@ public class OctreeNode {
     
 
     public boolean isSubdivided() {
-        return children != null;
+        return subdivided;
     }
 
     public OctreeNode getChild(int i) {
@@ -185,6 +187,12 @@ public class OctreeNode {
         if (centerValue == 0.0) {
             return true;
         }
+        
+      /*  float diffX = to.x-from.x;
+        float diffY = to.y-from.y;
+        float diffZ = to.z-from.z;
+        return Math.abs(centerValue) < Math.sqrt(diffX*diffX +diffY*diffY + diffZ*diffZ) * NEAR_FACTOR;*/
+        
         return Math.abs(centerValue) < (from.subtract(to)).length() * NEAR_FACTOR;
     }
 
