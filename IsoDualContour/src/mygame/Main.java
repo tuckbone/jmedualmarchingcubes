@@ -127,7 +127,7 @@ public class Main extends SimpleApplication {
             mark.setLocalTranslation(v3f);
             rootNode.attachChild(mark);
             
-            float radius=5;
+            float radius=8;
             
             if(name.equals("Shoot"))
                 source.addSphere(v3f, radius,true);
