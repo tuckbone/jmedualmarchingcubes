@@ -147,14 +147,14 @@ public class FloatGridSource extends VolumeSource{
                 getVolumeGridValue(x - 1, y, z) - getVolumeGridValue(x + 1, y, z),
                 getVolumeGridValue(x, y - 1, z) - getVolumeGridValue(x, y + 1, z),
                 getVolumeGridValue(x, y, z - 1) - getVolumeGridValue(x, y, z + 1));
-                //rfNormal.normalizeLocal();
+               // rfNormal.normalizeLocal();
                 return rfNormal;
             }else{
                 Vector3f rfNormal = new Vector3f(
                         data[x-1][y][z]-data[x+1][y][z],
                         data[x][y-1][z]-data[x][y+1][z],
                         data[x][y][z-1]-data[x][y][z+1]);
-                //rfNormal.normalizeLocal();
+               // rfNormal.normalizeLocal();
                 return rfNormal;   
             }
         }
@@ -275,7 +275,7 @@ public class FloatGridSource extends VolumeSource{
         float  worldDepthScale = 1.0f / scale.z;
         
         
-        float radiusSqrt = (float)(Math.sqrt(radius)+radius)/2;
+        float radiusSqrt = (float)Math.sqrt(radius);
 
 
         // No need for trilineaer interpolation here as we iterate over the

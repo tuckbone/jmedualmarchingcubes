@@ -124,10 +124,6 @@ public class Chunk extends Geometry {
             int level, int maxLevels, ChunkParameters parameter) {
         // Now recursively create the more detailed children
         if (level > 2) {
-          /*  Vector3f newCenter = new Vector3f();
-            Vector3f xWidth = new Vector3f();
-            Vector3f yWidth = new Vector3f();
-            Vector3f zWidth = new Vector3f();*/
 
             //OctreeNode.getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
             if (children == null) {
@@ -145,11 +141,12 @@ public class Chunk extends Geometry {
             Vector3f newCenter = new Vector3f(x,y,z);
             newCenter.addLocal(from);
             
-           // Vector3f xWidth = new Vector3f();
-           // Vector3f yWidth = new Vector3f();
-           // Vector3f zWidth = new Vector3f();
+           /* Vector3f newCenter = new Vector3f();
+            Vector3f xWidth = new Vector3f();
+            Vector3f yWidth = new Vector3f();
+            Vector3f zWidth = new Vector3f();
 
-            //getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);
+            OctreeNode.getChildrenDimensions(from, to, newCenter, xWidth, yWidth, zWidth);*/
             
             children[0].doLoad(parent,from, newCenter, totalFrom, totalTo, level - 1, maxLevels, parameter);
             children[1].doLoad(parent,new Vector3f(from.x+x,from.y,from.z), new Vector3f(newCenter.x+x,newCenter.y,newCenter.z), totalFrom, totalTo, level - 1, maxLevels, parameter);
@@ -189,13 +186,16 @@ public class Chunk extends Geometry {
         IsoSurface is = new IsoSurface(cr.parameter.source);
         cr.dualGridGenerator.generateDualGrid(cr.root, is, cr.mb, maxMSDistance,
                 cr.totalFrom, cr.totalTo, false);   //<-----DualGridVisualization = false
-
+        
+        cr.mesh = cr.mb.generateMesh();
+        
         cr.isFinished = true;
         //  loadGeometry(cr);
     }
 
     private void loadGeometry(ChunkRequest chunkRequest) {
-        invisible = (chunkRequest.mb.countVertices() == 0);
+      //  invisible = (chunkRequest.mb.countVertices() == 0);
+        invisible = (chunkRequest.mesh.getTriangleCount() <= 0);
 
         // chunkRequest.origin.box = chunkRequest.mb.getBoundingBox();
 
@@ -208,7 +208,8 @@ public class Chunk extends Geometry {
 
         //node.detachChild(this); //<-------------
 
-        setMesh(chunkRequest.mb.generateMesh());
+       // setMesh(chunkRequest.mb.generateMesh());
+        setMesh(chunkRequest.mesh);
         updateModelBound();
     }
 
@@ -247,6 +248,8 @@ public class Chunk extends Geometry {
         /// Whether this is an update of an existing tree
         boolean isUpdate;
         boolean isFinished = false;
+        
+        Mesh mesh;
 
         public void run() {
             origin.prepareGeometry(this);
